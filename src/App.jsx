@@ -14,20 +14,13 @@ function App() {
   const [completedSessions, setCompletedSessions] = useState(0)
   
   const timerRef = useRef(null)
-  const totalTime = MODES[mode].time * 60
-  
-  // 修正 progress 計算邏輯：(總時間 - 剩餘時間) / 總時間
-  const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
-  
-  // 計算圓形進度條的 stroke-dashoffset
-  const RADIUS = 120
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS
-  const offset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE
 
   // 請求通知權限
   useEffect(() => {
-    if (Notification.permission === 'default') {
-      Notification.requestPermission()
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
     }
   }, [])
 
@@ -48,7 +41,7 @@ function App() {
 
   const handleTimerComplete = () => {
     const message = `${MODES[mode].label}結束了！`
-    if (Notification.permission === 'granted') {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('番茄鐘通知', { body: message })
     }
     
@@ -78,6 +71,12 @@ function App() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
+  const totalTime = MODES[mode].time * 60
+  const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
+  const RADIUS = 120
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+  const offset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE
+
   return (
     <div className={`min-h-screen transition-all duration-700 flex flex-col items-center justify-center p-6 ${MODES[mode].bgColor}`}>
       <div className="w-full max-w-lg">
@@ -89,7 +88,7 @@ function App() {
               onClick={() => switchMode(key)}
               className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                 mode === key 
-                  ? 'bg-white text-gray-800 shadow-xl scale-100' 
+                  ? 'bg-white text-gray-800 shadow-xl' 
                   : 'text-white/80 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -99,7 +98,7 @@ function App() {
         </div>
 
         {/* 主要計時器卡片 */}
-        <div className="bg-white/15 backdrop-blur-2xl rounded-[40px] p-10 shadow-2xl border border-white/20 text-center relative overflow-hidden group">
+        <div className="bg-white/15 backdrop-blur-2xl rounded-[40px] p-10 shadow-2xl border border-white/20 text-center relative overflow-hidden">
           <div className="relative z-10">
             {/* 圓形進度條 */}
             <div className="relative w-64 h-64 mx-auto mb-8 flex items-center justify-center">
@@ -139,7 +138,7 @@ function App() {
             {/* 水平進度條 */}
             <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mb-8">
               <div 
-                className="bg-white h-full transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                className="bg-white h-full transition-all duration-1000 ease-linear"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -148,7 +147,7 @@ function App() {
             <div className="flex flex-col gap-5">
               <button
                 onClick={toggleTimer}
-                className="w-full py-5 bg-white text-gray-900 rounded-3xl text-2xl font-black shadow-2xl hover:bg-gray-50 transition-all active:scale-95 hover:shadow-white/20"
+                className="w-full py-5 bg-white text-gray-900 rounded-3xl text-2xl font-black shadow-2xl hover:bg-gray-50 transition-all active:scale-95"
               >
                 {isActive ? 'PAUSE' : 'START'}
               </button>
@@ -157,7 +156,6 @@ function App() {
                 <button
                   onClick={resetTimer}
                   className="text-white/60 hover:text-white transition-colors"
-                  title="重設計時"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -172,10 +170,6 @@ function App() {
               </div>
             </div>
           </div>
-          
-          {/* 背景裝飾光暈 */}
-          <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-1000"></div>
-          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-black/10 rounded-full blur-3xl group-hover:bg-black/20 transition-all duration-1000"></div>
         </div>
 
         {/* 當前任務輸入 */}
@@ -188,12 +182,6 @@ function App() {
             onChange={(e) => setTask(e.target.value)}
           />
         </div>
-
-        <footer className="mt-12 text-center">
-          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">
-            Vite + React + Tailwind v4
-          </p>
-        </footer>
       </div>
     </div>
   )
