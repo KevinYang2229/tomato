@@ -41,13 +41,14 @@ function App() {
 
   const handleTimerComplete = () => {
     const message = `${MODES[mode].label}結束了！`
-    new Notification('番茄鐘通知', { body: message })
+    if (Notification.permission === 'granted') {
+      new Notification('番茄鐘通知', { body: message })
+    }
     
     if (mode === 'work') {
       setCompletedSessions(prev => prev + 1)
     }
     
-    // 自動切換模式（可選邏輯）
     alert(message)
   }
 
@@ -123,9 +124,17 @@ function App() {
                   {formatTime(timeLeft)}
                 </span>
                 <span className="text-white/60 text-xs font-bold uppercase tracking-[0.2em] mt-2">
-                  {isActive ? '進行中' : '已暫停'}
+                  {Math.round(progress)}% 完成
                 </span>
               </div>
+            </div>
+
+            {/* 水平進度條 (新增) */}
+            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mb-8">
+              <div 
+                className="bg-white h-full transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                style={{ width: `${progress}%` }}
+              ></div>
             </div>
 
             {/* 控制按鈕 */}
