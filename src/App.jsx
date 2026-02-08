@@ -15,7 +15,14 @@ function App() {
   
   const timerRef = useRef(null)
   const totalTime = MODES[mode].time * 60
-  const progress = ((totalTime - timeLeft) / totalTime) * 100
+  
+  // 修正 progress 計算邏輯：(總時間 - 剩餘時間) / 總時間
+  const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
+  
+  // 計算圓形進度條的 stroke-dashoffset
+  const RADIUS = 120
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+  const offset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE
 
   // 請求通知權限
   useEffect(() => {
@@ -100,7 +107,7 @@ function App() {
                 <circle
                   cx="128"
                   cy="128"
-                  r="120"
+                  r={RADIUS}
                   stroke="currentColor"
                   strokeWidth="8"
                   fill="transparent"
@@ -109,11 +116,11 @@ function App() {
                 <circle
                   cx="128"
                   cy="128"
-                  r="120"
+                  r={RADIUS}
                   stroke="currentColor"
                   strokeWidth="10"
-                  strokeDasharray={2 * Math.PI * 120}
-                  strokeDashoffset={2 * Math.PI * 120 * (1 - progress / 100)}
+                  strokeDasharray={CIRCUMFERENCE}
+                  strokeDashoffset={offset}
                   strokeLinecap="round"
                   fill="transparent"
                   className="text-white transition-all duration-1000 ease-linear"
@@ -129,7 +136,7 @@ function App() {
               </div>
             </div>
 
-            {/* 水平進度條 (新增) */}
+            {/* 水平進度條 */}
             <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mb-8">
               <div 
                 className="bg-white h-full transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(255,255,255,0.5)]"
